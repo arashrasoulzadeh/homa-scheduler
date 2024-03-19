@@ -14,6 +14,7 @@ type Command struct {
 	Command   string
 	Args      datatypes.JSONMap
 	Tags      string
+	Channel   string
 	Status    string
 	CreatedAt time.Time
 }

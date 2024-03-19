@@ -1,20 +1,20 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/arashrasoulzadeh/homa-scheduler/models"
-	"github.com/arashrasoulzadeh/homa-scheduler/router"
-	"github.com/arashrasoulzadeh/homa-scheduler/socket"
+	"github.com/arashrasoulzadeh/homa-scheduler/invokers"
+	"github.com/arashrasoulzadeh/homa-scheduler/providers"
+	"go.uber.org/fx"
 )
 
 func main() {
-	fmt.Println("hello world")
-	connection := models.Connect()
-	models.RunMigrations(connection)
-	go router.Init(connection)
-	go socket.Init(connection)
-	for true {
+	fx.New(
+		fx.Provide(providers.LoggingSugar, providers.ConnectToDatabase),
+		fx.Invoke(invokers.RunHttpServer, invokers.RunSocketServer),
+	).Run()
 
-	}
+	// connection := models.Connect(sugar)
+	// models.RunMigrations(connection)
+	// for true {
+
+	// }
 }

@@ -2,29 +2,22 @@ package router
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/arashrasoulzadeh/homa-scheduler/models"
+	"github.com/arashrasoulzadeh/homa-scheduler/providers"
 	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"gorm.io/datatypes"
-	"gorm.io/gorm"
 )
 
-func Init(db *gorm.DB) {
-	r := chi.NewRouter()
-	port := ":3000"
-	r.Use(middleware.Logger)
-	scheduleRoute(r, db)
-	singleScheduledItemRoute(r, db)
-	fmt.Println("listening on port " + port)
-	http.ListenAndServe(port, r)
-
+func Init(r *chi.Mux, logger *zap.SugaredLogger, data providers.Data) {
+	scheduleRoute(r, data)
+	singleScheduledItemRoute(r, data)
 }
-func scheduleRoute(r *chi.Mux, db *gorm.DB) {
+func scheduleRoute(r *chi.Mux, data providers.Data) {
 	r.Post("/api/v1/schedule", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("accept", "applicatin/json")
 		w.Header().Add("content-type", "applicatin/json")
@@ -34,19 +27,21 @@ func scheduleRoute(r *chi.Mux, db *gorm.DB) {
 			Args:      datatypes.JSONMap{"image": "http"},
 			Status:    "pending",
 			CreatedAt: time.Now(),
+			Channel:   "general",
 		}
 		item.MarkAsDev()
-		db.Save(item)
+		data.Bus <- item
+		data.Connection.Save(item)
 		json.NewEncoder(w).Encode(item)
 	})
 }
-func singleScheduledItemRoute(r *chi.Mux, db *gorm.DB) {
+func singleScheduledItemRoute(r *chi.Mux, data providers.Data) {
 	r.Post("/api/v1/schedule/{uuid}", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("accept", "applicatin/json")
 		w.Header().Add("content-type", "applicatin/json")
 		id := chi.URLParam(r, "uuid")
 		item := models.Command{}
-		if err := db.Where("id = ?", id).First(&item).Error; err != nil {
+		if err := data.Connection.Where("id = ?", id).First(&item).Error; err != nil {
 			w.WriteHeader(404)
 			return
 		}
