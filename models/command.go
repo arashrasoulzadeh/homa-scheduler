@@ -2,19 +2,40 @@ package models
 
 import (
 	"encoding/json"
+	"strings"
+	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/datatypes"
 )
 
 type Command struct {
-	Id      uuid.UUID
-	Command string
-	Args    map[string]string
-	Tags    []string
+	Id        uuid.UUID
+	Command   string
+	Args      datatypes.JSONMap
+	Tags      string
+	Status    string
+	CreatedAt time.Time
 }
 
 func (c *Command) MarkAsDev() {
-	c.Tags = append(c.Tags, "dev")
+	c.AddTag("dev")
+}
+
+func (c *Command) MarkAsInPending() {
+	c.Status = "Pending"
+}
+
+func (c *Command) MarkAsInProgress() {
+	c.Status = "In Progress"
+}
+
+func (c *Command) AddTag(tag string) {
+	if c.Tags == "" {
+		c.Tags = tag
+	} else {
+		c.Tags = c.Tags + "," + tag
+	}
 }
 
 func (c *Command) Serialize() ([]byte, error) {
@@ -30,4 +51,7 @@ func (c *Command) Deserialize(data []byte) error {
 		return err
 	}
 	return nil
+}
+func (c *Command) TagsArray() []string {
+	return strings.Split(c.Tags, ",")
 }

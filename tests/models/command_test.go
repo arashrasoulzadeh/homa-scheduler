@@ -6,14 +6,15 @@ import (
 
 	"github.com/arashrasoulzadeh/homa-scheduler/models"
 	"github.com/google/uuid"
+	"gorm.io/datatypes"
 )
 
 func sampleCommand() models.Command {
 	return models.Command{
 		Id:      uuid.New(),
 		Command: "hello",
-		Args:    map[string]string{"name": "world"},
-		Tags:    []string{},
+		Args:    datatypes.JSONMap{},
+		Tags:    "",
 	}
 }
 func TestEmptyId(t *testing.T) {
@@ -25,7 +26,7 @@ func TestEmptyId(t *testing.T) {
 func TestMarkAsDev(t *testing.T) {
 	command := sampleCommand()
 	command.MarkAsDev()
-	if !slices.Contains(command.Tags, "dev") {
+	if !slices.Contains(command.TagsArray(), "dev") {
 		t.Fail()
 	}
 }
