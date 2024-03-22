@@ -22,7 +22,7 @@ func scheduleRoute(r *chi.Mux, data providers.Data) {
 		w.Header().Add("accept", "applicatin/json")
 		w.Header().Add("content-type", "applicatin/json")
 		item := models.Command{
-			Id:        uuid.New(),
+			ID:        uuid.New(),
 			Command:   "resize",
 			Args:      datatypes.JSONMap{"image": "http"},
 			Status:    "pending",

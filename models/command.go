@@ -10,7 +10,7 @@ import (
 )
 
 type Command struct {
-	Id        uuid.UUID
+	ID        uuid.UUID
 	Command   string
 	Args      datatypes.JSONMap
 	Tags      string

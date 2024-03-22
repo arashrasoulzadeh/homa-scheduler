@@ -13,9 +13,13 @@ func Connect(logger *zap.SugaredLogger) *gorm.DB {
 		panic("failed to connect database: " + err.Error())
 	}
 	logger.Info("connected to database")
+	RunMigrations(db)
 	return db
 }
 
 func RunMigrations(db *gorm.DB) {
 	db.AutoMigrate(Command{})
+	db.AutoMigrate(Instance{})
+	db.AutoMigrate(Clinet{})
+	db.AutoMigrate(CommandDelivery{})
 }
